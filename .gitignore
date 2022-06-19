@@ -25,3 +25,4 @@ replay_pid*
 
 # Intellij
 /.idea/
+/src/main/resources/application.properties
