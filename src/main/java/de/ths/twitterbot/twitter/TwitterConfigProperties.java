@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class TwitterConfigProperties {
 
     private String tweetUri;
-    private String baseHashTags;
+    private String baseHashTags = "";
     private String consumerKey;
     private String consumerSecret;
     private String accessToken;

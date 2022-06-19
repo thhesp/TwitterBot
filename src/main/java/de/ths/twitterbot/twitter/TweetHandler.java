@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 @Component
 public class TweetHandler {
 
-    private final static int TWEET_SIZE = 280;
+    protected final static int TWEET_SIZE = 280;
 
     private static final Logger LOG = LoggerFactory.getLogger(TweetHandler.class);
 
@@ -60,7 +60,7 @@ public class TweetHandler {
         return true;
     }
 
-    private StringEntity buildInitialTweet(CSVEntryDTO randomEntry) {
+    protected StringEntity buildInitialTweet(CSVEntryDTO randomEntry) {
         final String tweetMessageWithHashtags = buildMessageWithHashtags(randomEntry);
         final String json = new Tweet(tweetMessageWithHashtags).generateJson();
 
@@ -69,37 +69,40 @@ public class TweetHandler {
                 ContentType.APPLICATION_JSON);
     }
 
-    private String buildMessageWithHashtags(CSVEntryDTO randomEntry) {
+    protected String buildMessageWithHashtags(CSVEntryDTO randomEntry) {
         final String mergedHashTags = mergeHashtags(randomEntry.getHashtags(), twitterConfigProperties.getBaseHashTags());
 
         // try all hashtags
-        if((randomEntry.getMessage().length() + mergedHashTags.length()) <= TWEET_SIZE){
-            return new StringBuilder().append(randomEntry.getMessage()).append(" ").append(mergedHashTags).toString();
+        final String completeMsg = new StringBuilder().append(randomEntry.getMessage()).append(" ").append(mergedHashTags).toString();
+        if(completeMsg.length() <= TWEET_SIZE){
+            return completeMsg;
         }
 
         // try specific hashtags
         final String specificHashTags = Stream.of(randomEntry.getHashtags().split("\\|")).distinct().collect(Collectors.joining(" "));
-        if((randomEntry.getMessage().length() + specificHashTags.length()) <= TWEET_SIZE){
-            return new StringBuilder().append(randomEntry.getMessage()).append(" ").append(specificHashTags).toString();
+        final String msgAndSpecificTags = new StringBuilder().append(randomEntry.getMessage()).append(" ").append(specificHashTags).toString();
+        if(msgAndSpecificTags.length() <= TWEET_SIZE){
+            return msgAndSpecificTags;
         }
 
         // base hashtags
         final String onlybaseHashTags = Stream.of(twitterConfigProperties.getBaseHashTags().split("\\|")).distinct().collect(Collectors.joining(" "));
-        if((randomEntry.getMessage().length() + onlybaseHashTags.length()) <= TWEET_SIZE){
-            return new StringBuilder().append(randomEntry.getMessage()).append(" ").append(onlybaseHashTags).toString();
+        final String msgAndBaseTags = new StringBuilder().append(randomEntry.getMessage()).append(" ").append(onlybaseHashTags).toString();
+        if(msgAndBaseTags.length() <= TWEET_SIZE){
+            return msgAndBaseTags;
         }
 
         return randomEntry.getMessage();
     }
 
-    private String mergeHashtags(final String entryHashtags, final String baseHashTags){
+    protected String mergeHashtags(final String entryHashtags, final String baseHashTags){
         final List<String> hashTags = Stream.concat(Stream.of(entryHashtags.split("\\|")), Stream.of(baseHashTags.split("\\|")))
                 .toList();
 
-        return hashTags.stream().distinct().collect(Collectors.joining(" "));
+        return hashTags.stream().map(String::trim).distinct().sorted().collect(Collectors.joining(" "));
     }
 
-    private StringEntity buildSourceReply(CSVEntryDTO randomEntry, JSONObject jsonResponse) {
+    protected StringEntity buildSourceReply(CSVEntryDTO randomEntry, JSONObject jsonResponse) {
         final String json = new Tweet(randomEntry.getSource(), jsonResponse.getJSONObject("data").getString("id")).generateJson();
 
         return new StringEntity(
