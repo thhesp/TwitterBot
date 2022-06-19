@@ -26,7 +26,7 @@ public class BotPipeline {
 
         CSVEntryDTO randomEntry;
 
-        for(int i = 0; i < MAX_RETRIES; i++){
+        for(int i = 0; i < Math.min(MAX_RETRIES, entries.size()); i++){
             randomEntry = getRandomEntry(entries);
             if(tweetHandler.createTweet(randomEntry)){
                 LOG.info("Sucessfully created a tweet. Shutting down again.");

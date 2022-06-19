@@ -21,6 +21,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class TweetHandler {
@@ -57,11 +61,42 @@ public class TweetHandler {
     }
 
     private StringEntity buildInitialTweet(CSVEntryDTO randomEntry) {
-        final String json = new Tweet(randomEntry.getMessage()).generateJson();
+        final String tweetMessageWithHashtags = buildMessageWithHashtags(randomEntry);
+        final String json = new Tweet(tweetMessageWithHashtags).generateJson();
 
         return new StringEntity(
                 json,
                 ContentType.APPLICATION_JSON);
+    }
+
+    private String buildMessageWithHashtags(CSVEntryDTO randomEntry) {
+        final String mergedHashTags = mergeHashtags(randomEntry.getHashtags(), twitterConfigProperties.getBaseHashTags());
+
+        // try all hashtags
+        if((randomEntry.getMessage().length() + mergedHashTags.length()) <= TWEET_SIZE){
+            return new StringBuilder().append(randomEntry.getMessage()).append(" ").append(mergedHashTags).toString();
+        }
+
+        // try specific hashtags
+        final String specificHashTags = Stream.of(randomEntry.getHashtags().split("\\|")).distinct().collect(Collectors.joining(" "));
+        if((randomEntry.getMessage().length() + specificHashTags.length()) <= TWEET_SIZE){
+            return new StringBuilder().append(randomEntry.getMessage()).append(" ").append(specificHashTags).toString();
+        }
+
+        // base hashtags
+        final String onlybaseHashTags = Stream.of(twitterConfigProperties.getBaseHashTags().split("\\|")).distinct().collect(Collectors.joining(" "));
+        if((randomEntry.getMessage().length() + onlybaseHashTags.length()) <= TWEET_SIZE){
+            return new StringBuilder().append(randomEntry.getMessage()).append(" ").append(onlybaseHashTags).toString();
+        }
+
+        return randomEntry.getMessage();
+    }
+
+    private String mergeHashtags(final String entryHashtags, final String baseHashTags){
+        final List<String> hashTags = Stream.concat(Stream.of(entryHashtags.split("\\|")), Stream.of(baseHashTags.split("\\|")))
+                .toList();
+
+        return hashTags.stream().distinct().collect(Collectors.joining(" "));
     }
 
     private StringEntity buildSourceReply(CSVEntryDTO randomEntry, JSONObject jsonResponse) {
