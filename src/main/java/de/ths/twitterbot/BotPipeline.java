@@ -15,7 +15,7 @@ import java.util.Random;
 public class BotPipeline {
 
     private static final int MAX_RETRIES = 5;
-    private static Logger LOG = LoggerFactory.getLogger(BotPipeline.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BotPipeline.class);
     @Autowired
     private CSVLoader csvLoader;
     @Autowired

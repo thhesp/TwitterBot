@@ -2,7 +2,6 @@ package de.ths.twitterbot.data;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
-import de.ths.twitterbot.twitter.TweetHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,6 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -21,7 +19,7 @@ import java.util.stream.Collectors;
 @Component
 public class CSVLoader {
 
-    private static Logger LOG = LoggerFactory.getLogger(CSVLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CSVLoader.class);
 
     @Autowired
     private CSVConfigProperties csvConfigProperties;

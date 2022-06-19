@@ -6,9 +6,7 @@ import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.exception.OAuthCommunicationException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
-import oauth.signpost.http.HttpRequest;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -29,7 +27,7 @@ public class TweetHandler {
 
     private final static int TWEET_SIZE = 280;
 
-    private static Logger LOG = LoggerFactory.getLogger(TweetHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TweetHandler.class);
 
     @Autowired
     private TwitterConfigProperties twitterConfigProperties;
@@ -80,11 +78,11 @@ public class TweetHandler {
         consumer.setTokenWithSecret(twitterConfigProperties.getAccessToken(), twitterConfigProperties.getAccessTokenSecret());
 
         try (CloseableHttpClient httpclient = HttpClientBuilder.create().build()) {
-            HttpPost httpget = new HttpPost(twitterConfigProperties.getTweetUri());
+            HttpPost httpPost = new HttpPost(twitterConfigProperties.getTweetUri());
 
-            httpget.setEntity(json);
-            consumer.sign(httpget);
-            org.apache.http.HttpResponse response = httpclient.execute(httpget);
+            httpPost.setEntity(json);
+            consumer.sign(httpPost);
+            org.apache.http.HttpResponse response = httpclient.execute(httpPost);
             LOG.info(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
             String jsonResponse = EntityUtils.toString(entity, StandardCharsets.UTF_8);
